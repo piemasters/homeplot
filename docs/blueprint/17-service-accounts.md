@@ -23,7 +23,7 @@ Costs are approximate as of late 2026. **Check current pricing and terms when si
 4. Store each key in the password manager.
 5. Add the key to the right environment (`.env.local`, the host's environment variables, or GitHub Actions secrets) under the variable names in §10.
 
-## 17.2 Stage 0: prototype (needed for phases 1–6)
+## 17.2 Stage 0: prototype (needed for phases 0–6)
 
 | # | Service | Purpose | Cost |
 |---|---|---|---|
@@ -36,6 +36,7 @@ Costs are approximate as of late 2026. **Check current pricing and terms when si
 | A7 | Sentry | Error tracking | Free (Developer) plan |
 | A8 | PostHog | Product analytics | Free tier |
 | A9 | Upstash (optional in Stage 0) | Rate limiting | Free tier |
+| A10 | Figma (optional) | Wireframes and brand (§18) | Free plan |
 
 ### A1. Domain registrar
 - **Suggested registrar:** Cloudflare Registrar (sells at cost and keeps DNS in one place). It doesn't sell `.co.uk`; for that, use any registrar and point the nameservers at Cloudflare.
@@ -57,11 +58,18 @@ Costs are approximate as of late 2026. **Check current pricing and terms when si
 ### A3. GitHub
 - **Sign-up needs:** an account with two-factor authentication.
 - **Configure:**
-  - A private repo.
-  - Branch protection on `main`: pull requests only, CI must pass.
-  - Dependabot alerts.
+  - The repo is **public in Stage 0** (§11.9) and goes private at scale-up (runbook step 0).
+  - **Branch protection / ruleset on `main`:** pull request required, CI status checks required, no force-pushes, no deletions (§12.1).
+  - **Secret scanning with push protection** on while the repo is public (free), plus **Dependabot alerts** and security updates.
   - **Actions secrets** for the keep-awake job and CI: `DATABASE_URL`, Supabase CLI access token, and later the Stage 1 deployment secrets.
+  - Repo settings: squash merge only, auto-delete branches after merge.
 - **Produces:** the repo, CI and the scheduled keep-awake job (§11.2).
+- **At scale-up:** a paid plan (Pro for a personal account, Team for an organisation) keeps branch protection on a private repo. Secret scanning stops when the repo goes private; no paid replacement (§11.9).
+
+### A10. Figma (optional)
+- **Sign-up needs:** ops email.
+- **Configure:** a team or project `homeplot` on the free plan; export agreed wireframes to `docs/design/` (§18.4).
+- **Produces:** nothing secret. Design files only.
 
 ### A4. Supabase
 - **Sign-up needs:** GitHub login or ops email.
@@ -139,6 +147,7 @@ Costs are approximate as of late 2026. **Check current pricing and terms when si
 | B7 | Apple Developer Program | "Sign in with Apple", then the iOS app | ~£79/yr (US$99) |
 | B8 | Google Search Console + Bing Webmaster Tools | SEO monitoring, sitemaps | Free |
 | B9 | Slack or Discord (optional) | Ops notifications webhook | Free |
+| B10 | GitHub paid plan (Pro or Team) | Keep branch protection once the repo is private (§11.9) | ~$4/user/mo |
 
 ### B1. Supabase (Pro and staging)
 - **Configure:**
@@ -222,6 +231,11 @@ Costs are approximate as of late 2026. **Check current pricing and terms when si
 ### B9. Ops notifications (optional)
 - **Configure:** an incoming webhook to a private channel.
 - **Produces:** `OPS_NOTIFY_WEBHOOK_URL`.
+
+### B10. GitHub paid plan (when the repo goes private)
+- **When:** scale-up runbook step 0 (§11.5).
+- **Configure:** upgrade to Pro (personal) or Team (organisation; consider creating a `homeplot` GitHub organisation and transferring the repo). Then re-check branch protection, Actions minutes and the hosting/Supabase GitHub app access. Free secret scanning stops for private repos; no paid add-on (§11.9).
+- **Produces:** nothing new; existing secrets carry over.
 
 ## 17.4 Later (phase 10 and beyond)
 

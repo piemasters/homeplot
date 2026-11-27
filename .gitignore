@@ -1,3 +1,33 @@
-.history
+# Editor history
+.history/
+
 # Local-only competitor reference material (never commit)
 docs/reference/
+
+# Secrets: only example env files are committed
+.env*
+!.env*.example
+
+# Data (raw downloads, staged GeoParquet, built tiles)
+data/
+*.pmtiles
+!apps/web/public/tiles/fixtures/*.pmtiles
+
+# Dependencies and build output
+node_modules/
+.turbo/
+.next/
+dist/
+out/
+coverage/
+.netlify/
+.vercel/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/
+
+# OS
+.DS_Store
