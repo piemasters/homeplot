@@ -43,6 +43,7 @@
 **ETL:** Python 3.12+.
 - **DuckDB with its spatial extension is the main engine.** It handles the large joins, aggregations and spatial work: 30M Price Paid rows, 24M INSPIRE polygons, crime to OA. It runs on a laptop in minutes.
 - **Intermediate outputs are GeoParquet** in `data/stage/`.
+- **Downloads come only from `etl/sources.yaml`** (§2.1): URLs, versions, licences, attribution and checksums.
 - `geopandas`/`shapely` handle only small or awkward steps.
 - Other libraries: `pyogrio`/`ogr2ogr` to read GML and GeoPackage, `osmium` for OSM, `psycopg` (COPY) to load Postgres, `boto3` for R2 uploads.
 

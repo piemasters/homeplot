@@ -37,7 +37,7 @@ The architecture is the **same in both stages**: same code, schema, map files an
 | Rate limiting | Middleware present; Upstash free or disabled (`RATE_LIMIT_ENABLED=false`) | n/a | Upstash on |
 | Environments | **One** (prototype = production); local dev points at it | Be careful with data changes | Local / staging / production (§4) |
 | ETL | **Run on a laptop**; upload with `etl/upload_r2.py` and `psql`/COPY | Manual | Scheduled GitHub Actions |
-| CI | GitHub Actions free minutes: lint, type-check, tests | 2,000 minutes/month on private repos | Same + migration deploys |
+| CI | GitHub Actions: lint, type-check, tests. **Free and unmetered on standard runners while the repo is public** (§11.9). | n/a while public | Private repo: the paid plan's minutes allowance, plus migration deploys and scheduled ETL |
 | Bot protection, SEO, PWA, apps, alerts | **Not built** | n/a | Built in Stage 1 phases |
 
 **Keep Supabase awake:** schedule a daily GitHub Actions job that makes one lightweight query, so the project doesn't pause between demos. Before any investor demo, still check that it's up.
@@ -69,11 +69,20 @@ Everything that differs between stages is controlled by environment variables (�
 - Crime is stored aggregated only. INSPIRE plots never go in Postgres (§5).
 - The ETL prints `pg_total_relation_size` per table after loading, and the publish gate **fails if the total is over the budget**.
 - **Suggested coverage:** start with about 5–8 adjacent boroughs or districts around Croydon/Sutton (the sample area), then expand while under budget. A region the size of Greater London is likely to exceed 500 MB once 5 years of sales and indexes are included, so measure before committing.
+- **Fallback if the budget doesn't fit** (experiment E4, §12.3): use a **smaller, more densely populated area** for the demo instead, e.g. 2–3 inner boroughs (Croydon + Sutton, or a compact inner-London cluster).
+  - Dense areas have more sales per OA and more visible variation between neighbouring areas, so they often demo better anyway.
+  - Price Paid can also be trimmed to 3 years in Stage 0.
+  - The demo script (§11.7) is adjusted to the chosen area, e.g. the "Work" pin location.
 - **Map files (R2 ≤ 10 GB):** `areas` (prototype coverage, all zooms), `plots` (coverage councils only), and the background map clipped to coverage. Each should stay well under 1 GB.
 
 ## 11.5 Scale-up runbook (after funding)
 Steps are listed in order. Each one is a plan upgrade or a configuration change backed by code that already exists.
 
+0. **Repository goes private** (§11.9):
+   - Upgrade GitHub to a plan that keeps branch protection on private repos (Pro for a personal account, Team for an organisation; consider moving the repo into a GitHub organisation at the same time).
+   - Re-check the branch protection rules after the switch. GitHub's free secret scanning stops for private repos; no paid replacement is planned, so follow the commit checks in §11.9.
+   - Make sure the Actions minutes allowance covers CI plus the scheduled ETL.
+   - Re-connect the hosting and Supabase GitHub integrations if they lose access.
 1. **Supabase:**
    - Upgrade the existing project to **Pro**; it becomes production and keeps its data and users.
    - Create a **staging** project and apply all migrations with the Supabase CLI.
@@ -100,6 +109,8 @@ Steps are listed in order. Each one is a plan upgrade or a configuration change 
    - Remove the "Preview" badge (`NEXT_PUBLIC_APP_STAGE=launch`).
 10. **Growth:** SEO stage 1 (§9.8), PWA (phase 8), then the Capacitor apps (phase 10).
 
+Build phase 7 starts after steps 0–6.
+
 **When to start the runbook:** any of these:
 - funding is secured
 - more than about 20 testers
@@ -113,7 +124,7 @@ Steps are listed in order. Each one is a plan upgrade or a configuration change 
 |---|---|---|
 | **Stage 0: prototype** | Free tiers above, domain | **~£1** (domain amortised) |
 | **Stage 0.5: private beta** (optional) | Supabase Pro (prod only), hosting free/paid, R2 still free, browser PDFs | ~£20–40 |
-| **Stage 1: public launch** | Full setup in §4: staging + production, Worker, PDF worker, Stripe | ~£60–100 (plus Stripe fees per transaction) |
+| **Stage 1: public launch** | Full setup in §4: staging + production, Worker, PDF worker, Stripe, private GitHub repo on a paid plan | ~£65–110 (plus Stripe fees per transaction) |
 
 ## 11.7 Investor demo script (defines Stage 0 scope)
 
@@ -147,3 +158,36 @@ Rehearse the script against the deployed prototype before every investor meeting
 - **Never hard-code the coverage area**, the map file location or the PDF mode; always read the stage switches.
 - Keep CI and tests running. They're free and protect the demo.
 - Even with 5 testers, hold minimal personal data: a short privacy note in the invite and on the site, and testers' emails only.
+
+## 11.9 Repository visibility: public in Stage 0, private at scale-up
+**Stage 0: build in public (deliberate).** The repo, including this blueprint (pricing, roadmap, demo script, pitch metrics, open decisions), is public. The accepted trade-off:
+- **Benefits:** free unmetered CI, free secret scanning with push protection, free branch protection, and a visible build history to show investors and future hires.
+- **Cost:** competitors can read the plan.
+- **Mitigation:** the advantage is in execution, data quality and speed, not in the document.
+
+**Never commit, even though the repo is public:**
+- secrets or `.env` files
+- tester names, emails or feedback (`docs/research/` stays anonymised: "Tester A")
+- investor names, terms or pitch decks
+- third-party material (e.g. `docs/reference/`, which is git-ignored)
+- raw or staged data
+
+Anything pushed while public **stays public forever** (clones, forks, caches), even after the repo is made private or history is rewritten.
+
+**Code licence:** the `LICENSE` file follows D15 (§16). Being public doesn't make the code open source: without a licence that grants rights, others may read it but not reuse it.
+
+**Going private (scale-up runbook step 0, §11.5).** Make the repo private when the first of these happens:
+- funding is secured
+- the runbook starts
+- real customer or commercial details start to appear in issues, pull requests or docs
+
+**What changes when it goes private:**
+
+| Feature | Public (Stage 0) | Private (Stage 1) |
+|---|---|---|
+| GitHub Actions | Free, unmetered on standard runners | Monthly minutes allowance on the paid plan; larger runners billed |
+| Branch protection / rulesets | Free | Needs GitHub Pro (personal) or Team (organisation) |
+| Secret scanning + push protection | Free | **Not used** (paid only). Rely on the commit checks below. |
+| Dependabot alerts | Free | Free |
+
+**Secret safety after going private:** no paid scanning. Rely on the strict `.gitignore`, only committing `.env*.example` files with empty values, and checking every diff before committing (the list above). If a secret is ever committed, rotate the key straight away; deleting the commit isn't enough.

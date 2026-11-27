@@ -32,16 +32,21 @@ Section numbers (`§N.N`) are used throughout and map to the files below.
 | 15  | [15-performance-budgets.md](15-performance-budgets.md)                     | Speed and size budgets, CI checks                                                   |
 | 16  | [16-open-decisions.md](16-open-decisions.md)                               | Unresolved choices                                                                  |
 | 17  | [17-service-accounts.md](17-service-accounts.md)                           | Every external account, what it needs and what it produces                          |
+| 18  | [18-design.md](18-design.md)                                               | Design deliverables, brand vs data colours, layout rules                            |
 
 ## What to read for each phase
 
-Always read `CLAUDE.md`, §12 (the phase itself) and §16 (open decisions) first.
+Always read `CLAUDE.md`, §12 (the phase itself, including §12.1 working process) and §16 (open decisions) first.
 
-| Phase                  | Also read                                                 |
-| ---------------------- | --------------------------------------------------------- |
-| 1. Scaffold            | §4, §5, §9.2–9.4, §10, §11.2–11.3, §15, §17.2             |
-| 2. ETL core            | §2, §4 (ETL, publish gate), §5, §6.1, §11.4               |
-| 3. Map                 | §4 (map files, background map), §8 (UI rules), §11.3, §15 |
+| Phase                     | Also read                                                       |
+| ------------------------- | --------------------------------------------------------------- |
+| 0a. Repo hygiene          | §11.9, §17.2 (A3)                                               |
+| 0b. Experiments           | §6.2, §11.2–11.4, §15, §2 (INSPIRE, schools notes)              |
+| 0c. Design                | §18, §8, §11.7, §6.2                                            |
+| 1a. Working slice         | §2.1, §4, §5, §11.2–11.3, §17.2                                 |
+| 1b. Foundations           | §2.1, §4, §9.2–9.4, §10, §11.3, §14, §15                        |
+| 2. ETL core               | §2, §4 (ETL, publish gate), §5, §6.1, §11.4                     |
+| 3. Map                    | §4 (map files, background map), §8, §18, §11.3, §15             |
 | 4. Match engine        | §6, §14, §15                                              |
 | 5. Remaining data      | §2, §5, §6                                                |
 | 6. Reports             | §7, §9.7, §11.7, §14                                      |

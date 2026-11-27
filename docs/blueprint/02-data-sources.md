@@ -54,3 +54,35 @@ All of these are free bulk downloads under the Open Government Licence (OGL) or 
   - **Tap a plot** to highlight it and show its area in m² and acres, with a "property report for this plot" action.
   - **Not loaded into Postgres in v1.** The report takes the tapped point and plot ID, and the area is read from the tile attributes.
   - **UI wording:** always label plots as "indicative boundaries". Never call them legal boundaries or ownership.
+
+## 2.1 Source manifest (`etl/sources.yaml`)
+
+Every dataset the ETL uses is declared once in `etl/sources.yaml`. The downloader reads only from this file; there are no hard-coded URLs in ETL code.
+
+```yaml
+price_paid:
+  name: HM Land Registry Price Paid Data
+  publisher: HM Land Registry
+  url: https://...                  # direct download URL or URL template
+  version: "2026-10"                # release / as-of date this run uses
+  format: csv
+  refresh: monthly
+  licence: OGL-UK-3.0
+  licence_url: https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+  attribution: "Contains HM Land Registry data © Crown copyright and database right 2026. ..."
+  sha256: "…"                       # checksum of the downloaded file(s), filled by the downloader
+  downloaded_at: "2026-11-05"
+  notes: Category A sales only; last 10 years (5 in Stage 0).
+inspire_polygons:
+  name: INSPIRE Index Polygons
+  licence: HMLR-INSPIRE              # not OGL; see §2 boundaries note and D10
+  url_template: https://.../{council}.zip
+  councils: [Croydon, Sutton]        # Stage 0 coverage; all of England in Stage 1
+  # ...
+```
+
+**What it gives us:**
+- **Reproducible runs.** Each data version records which source versions and checksums it was built from: `data_versions.sources` is copied from the manifest. A run can be repeated exactly, and changed upstream files are detected.
+- **Generated pages.** The **attribution page** (§9.9) and the source details on the **methodology page** (§9.7) are generated from the manifest, so licences and credits can't fall out of step with the data actually used.
+- **Licence checks.** CI fails if any source lacks `licence`, `licence_url` or `attribution`, or if a source marked `licence: unknown` is used.
+- **Updating a source** is a pull request that changes `version` (and the URL if needed). The ETL run fills in `sha256` and `downloaded_at`.
